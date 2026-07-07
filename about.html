@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,6 +6,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>About us</title>
     <link rel="stylesheet" href="style.css">
+
+    <style>
+             
+
+        body{
+            font-family:Arial,Helvetica,sans-serif;
+            background:#f4f4f4;
+            margin:0;
+            transition:.4s;
+            padding-top: 10%; 
+            padding-bottom:30%
+        }
+
+        .dark{
+            background:#222;
+            color:white;
+        }
+
+        .container{
+            width:80%;
+            max-width:900px;
+            margin:40px auto;
+            background:white;
+            padding:30px;
+            border-radius:10px;
+            box-shadow:0 0 10px rgba(0,0,0,.2);
+        }
+
+        .dark .container{
+            background:#333;
+        }
+
+        h1{
+            text-align:center;
+        }
+
+        button{
+            padding:10px 20px;
+            margin:10px 5px;
+            cursor:pointer;
+        }
+
+        #extra{
+            display:none;
+        }
+
+        footer{
+            text-align:center;
+            margin-top:20px;
+        }
+
+    </style>
 </head>
 <body>
 
@@ -44,7 +97,10 @@
 
     </header>
 
-<!-- About -->
+
+
+<!--
+About
 
     <section class="about" id="about">
 
@@ -61,8 +117,184 @@
 
         </div>
 
-    </section>
-    
+    </section> 
+-->
+
+
+    <!-- Inject Here DOM -->
+    <div id="app"></div>
+
+
     <script src="script.js"></script>
+
+    <script>
+        
+
+// Root Element
+
+const app = document.getElementById("app");
+
+/*
+        ~~~~~~~~~~~~~~~~~~~~ Events ~~~~~~~~~~~~~~~~~~~
+*/
+
+// Container
+
+const container = document.createElement("div");
+container.className = "container";
+
+
+// Heading
+
+const heading = document.createElement("h1");
+heading.textContent = "About Us";
+
+
+// Paragraph
+
+const para = document.createElement("p");
+
+para.textContent =
+"Lorem ipsum dolor sit amet consectetur, adipisicing elit. Sit officia omnis suscipit voluptas ad itaque molestias. Consequatur ipsam sint neque maxime! Vero est, laboriosam incidunt corporis ex necessitatibus praesentium inventore! ";
+
+
+// Hidden Paragraph
+
+const extra = document.createElement("p");
+
+extra.id = "extra";
+
+extra.textContent =
+"OLorem ipsum dolor sit amet consectetur, adipisicing elit. Sit officia omnis suscipit voluptas ad itaque molestias. Consequatur ipsam sint neque maxime! Vero est, laboriosam incidunt corporis ex necessitatibus praesentium inventore!";
+
+
+// Read More Button
+
+const btn = document.createElement("button");
+
+btn.textContent = "Read More";
+
+
+// Theme Button
+
+const themeBtn = document.createElement("button");
+
+themeBtn.textContent = "Dark Mode";
+
+
+// Footer
+
+const footer = document.createElement("footer");
+
+footer.innerHTML =
+` © <span id="year"></span>
+ MediQueue Hospital | Made By <a href="coffee&coders.html" style=" text-decoration: none; color:burlywood;"> &#9749;  Coffee & Coders 👨‍💻 </a>
+`;
+
+
+// Append Elements
+
+container.appendChild(heading);
+
+container.appendChild(para);
+
+container.appendChild(extra);
+
+container.appendChild(btn);
+
+container.appendChild(themeBtn);
+
+container.appendChild(footer);
+
+app.appendChild(container);
+
+/*
+        ~~~~~~~~~~~~~~~~~~~~ Events ~~~~~~~~~~~~~~~~~~~
+*/
+
+// Current Year
+
+document.getElementById("year").textContent =
+new Date().getFullYear();
+
+
+// Read More Event
+
+btn.addEventListener("click", function(){
+
+    if(extra.style.display==="block"){
+
+        extra.style.display="none";
+
+        btn.textContent="Read More";
+
+    }else{
+
+        extra.style.display="block";
+
+        btn.textContent="Read Less";
+    }
+
+});
+
+
+// Theme Event
+
+themeBtn.addEventListener("click", function(){
+
+    document.body.classList.toggle("dark");
+
+    if(document.body.classList.contains("dark")){
+
+        themeBtn.textContent="Light Mode";
+
+    }else{
+
+        themeBtn.textContent="Dark Mode";
+    }
+
+});
+
+
+// Mouse Over Event
+
+heading.addEventListener("mouseover", function(){
+
+    heading.style.color="dodgerblue";
+
+});
+
+
+// Mouse Leave Event
+
+heading.addEventListener("mouseleave", function(){
+
+    heading.style.color="";
+
+});
+
+
+// Double Click Event
+
+heading.addEventListener("dblclick", function(){
+
+    alert("Welcome to the About Page!");
+
+});
+
+
+// Keyboard Event
+
+document.addEventListener("keydown", function(event){
+
+    if(event.key==="t"){
+
+        document.body.classList.toggle("dark");
+
+    }
+
+});
+
+    </script>
 </body>
 </html>
