@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Admin Dashboard</title>
+    <!-- Google Fonts & Chart.js -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --sidebar-bg: #0f172a;
+            --sidebar-color: #94a3b8;
+            --sidebar-active: #38bdf8;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --accent-color: #3b82f6;
+            --success-color: #10b981;
+            --transition-speed: 0.3s;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --sidebar-bg: #020617;
+            --sidebar-color: #64748b;
+            --sidebar-active: #38bdf8;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            transition: background-color var(--transition-speed);
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+            transition: all var(--transition-speed);
+            z-index: 100;
+        }
+
+        .sidebar-brand {
+            color: #ffffff;
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 2.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .nav-btn {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: none;
+            border: none;
+            border-radius: 0.5rem;
+            color: var(--sidebar-color);
+            font-size: 0.95rem;
+            font-weight: 500;
+            text-align: left;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: all var(--transition-speed);
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--sidebar-active);
+        }
+
+        /* --- MAIN CONTENT WRAPPER --- */
+        .main-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        /* --- TOP HEADER --- */
+        header {
+            background-color: var(--bg-secondary);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-main);
+            cursor: pointer;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            cursor: pointer;
+            color: var(--text-main);
+        }
+
+        .profile-img {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+        }
+
+        /* --- DASHBOARD VIEW PANELS --- */
+        .view-panel {
+            padding: 2rem;
+            display: none;
+        }
+
+        .view-panel.active {
+            display: block;
+        }
+
+        .page-title {
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        /* --- STAT CARDS GRID --- */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background-color: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .card-title {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .card-trend {
+            font-size: 0.85rem;
+            color: var(--success-color);
+            font-weight: 500;
+        }
+
+        /* --- CHARTS CONTAINER --- */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 1024px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* --- RESPONSIVE MOBILE BREAKPOINTS --- */
+        @media (max-width: 768px) {
+            body {
+                position: relative;
+            }
+            .sidebar {
+                position: absolute;
+                left: -260px;
+                height: 100%;
+            }
+            .sidebar.open {
+                left: 0;
+            }
+            .menu-toggle {
+                display: block;
+            }
+            .view-panel {
+                padding: 1.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">⚡ AdminPanel</div>
+        <ul class="nav-list">
+            <li><button class="nav-btn active" data-target="overview">📊 Overview</button></li>
+            <li><button class="nav-btn" data-target="analytics">📈 Analytics</button></li>
+            <li><button class="nav-btn" data-target="settings">⚙️ Settings</button></li>
+        </ul>
+    </aside>
+
+    <!-- MAIN CONTENT VIEW -->
+    <div class="main-wrapper">
+        <header>
+            <button class="menu-toggle" id="menuToggle" aria-label="Toggle Menu">☰</button>
+            <div class="header-actions">
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle Theme">🌓</button>
+                <div class="profile-img"></div>
+            </div>
+        </header>
+
+        <main>
+            <!-- OVERVIEW PANEL -->
+            <section id="overview" class="view-panel active">
+                <h1 class="page-title">Overview Dashboard</h1>
+                
+                <div class="metrics-grid">
+                    <div class="card">
+                        <div class="card-title">Total Revenue</div>
+                        <div class="card-value">$48,254</div>
+                        <div class="card-trend">↑ 12% vs last week</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Active Sessions</div>
+                        <div class="card-value">1,482</div>
+                        <div class="card-trend">↑ 4.3% vs last week</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Conversion Rate</div>
+                        <div class="card-value">2.84%</div>
+                        <div class="card-trend">↑ 0.9% vs last week</div>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="card">
+                        <h3 style="margin-bottom: 1rem;">Platform Traffic History</h3>
+                        <canvas id="lineChart" style="width: 100%; max-height: 320px;"></canvas>
+                    </div>
+                    <div class="card">
+                        <h3 style="margin-bottom: 1rem;">Traffic Sources</h3>
+                        <canvas id="doughnutChart" style="width: 100%; max-height: 320px;"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ANALYTICS PANEL -->
+            <section id="analytics" class="view-panel">
+                <h1 class="page-title">Detailed Analytics</h1>
+                <div class="card">
+                    <p style="color: var(--text-muted)">Deep-dive metrics and logs display area.</p>
+                </div>
+            </section>
+
+            <!-- SETTINGS PANEL -->
+            <section id="settings" class="view-panel">
+                <h1 class="page-title">Account Settings</h1>
+                <div class="card">
+                    <p style="color: var(--text-muted)">Configure your application properties and system values here.</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // 1. Tab Switching Engine
+        const navButtons = document.querySelectorAll('.nav-btn');
+        const viewPanels = document.querySelectorAll('.view-panel');
+        const sidebar = document.getElementById('sidebar');
+        const menuToggle = document.getElementById('menuToggle');
+
+        navButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Adjust Active Button States
+                navButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                // Adjust Active View Panel Visibility
+                const targetPanelId = btn.getAttribute('data-target');
+                viewPanels.forEach(panel => {
+                    panel.classList.remove('active');
+                    if(panel.id === targetPanelId) {
+                        panel.classList.add('active');
+                    }
+                });
+
+                // Auto close menu drawer on mobile tap
+                if (window.innerWidth <= 768) {
+                    sidebar.classList.remove('open');
+                }
+            });
+        });
+
+        // Mobile Sidebar Toggle
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+        });
+
+        // 2. Light / Dark Theme Toggling
+        const themeToggle = document.getElementById('themeToggle');
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const targetTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', targetTheme);
+        });
+
+        // 3. Chart.js Implementations
+        // Line Chart Configuration
+        const ctxLine = document.getElementById('lineChart').getContext('2d');
+        new Chart(ctxLine, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+                datasets: [{
+                    label: 'Unique Visitors',
+                    data: [12000, 19000, 3000, 5000, 22000, 30000, 45000],
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.05)',
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { grid: { color: 'rgba(0,0,0,0.03)' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        // Doughnut Chart Configuration
+        const ctxDoughnut = document.getElementById('doughnutChart').getContext('2d');
+        new Chart(ctxDoughnut, {
+            type: 'doughnut',
+            data: {
+                labels: ['Direct', 'Social', 'Referral'],
+                datasets: [{
+                    data: [55, 30, 15],
+                    backgroundColor: ['#3b82f6', '#10b981', '#f59e0b'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 12 } }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
