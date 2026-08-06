@@ -1,50 +1,49 @@
 <?php
-// Initialize session context
-require 'database.connection.php'; // This connects the page to the database!
 session_start();
+require 'database.connection.php'; // Connect to the database
 
-// Redirect to dashboard immediately if the user is already authenticated
-if (isset($_SESSION['user_email'])) {
+// Redirect if already logged in
+if (isset($_SESSION['user_id'])) {
     header("Location: dashboard.php");
     exit();
 }
 
 $error_message = "";
 
-// Intercept form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Collect and sanitize raw string inputs
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
 
-    // Standard Backend Form Validation
     if (empty($email) || empty($password)) {
         $error_message = "All form fields are mandatory.";
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error_message = "Please provide a valid email format.";
-    } elseif (strlen($password) < 8) {
-        $error_message = "Security policy requires passwords to contain at least 8 characters.";
     } else {
-        // Secure Simulated Authentication Check
-        $mock_user_email = "student@university.edu";
-        $mock_password_hash = password_hash("secureStudent123", PASSWORD_DEFAULT);
+        // Professional Standard: Prepared Statements to prevent SQL Injection
+        $stmt = $conn->prepare("SELECT user_id, email, password_hash, role FROM users WHERE email = ?");
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-        // Verify credentials securely using timing-attack resistant comparisons
-        if ($email === $mock_user_email && password_verify($password, $mock_password_hash)) {
-            // Re-generate Session ID to protect against Session Fixation attacks
-            session_regenerate_id(true);
+        if ($row = $result->fetch_assoc()) {
+            // Verify the bcrypt hashed password
+            if (password_verify($password, $row['password_hash'])) {
+                session_regenerate_id(true); // Prevent session fixation
+                
+                $_SESSION['user_id'] = $row['user_id'];
+                $_SESSION['user_email'] = $row['email'];
+                $_SESSION['user_role'] = $row['role'];
+                $_SESSION['last_activity'] = time();
 
-            // Write variables to session state
-            $_SESSION['user_email'] = $email;
-            $_SESSION['user_role'] = "Administrator";
-            $_SESSION['login_time'] = time();
-
-            // Redirect securely to dashboard panel
-            header("Location: dashboard.php");
-            exit();
+                header("Location: dashboard.php");
+                exit();
+            } else {
+                $error_message = "Invalid password. Please try again.";
+            }
         } else {
-            $error_message = "Invalid credential combinations. Please try again.";
+            $error_message = "No account found with that email address.";
         }
+        $stmt->close();
     }
 }
 ?>
@@ -53,33 +52,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HealthSuite Dynamic Secure Login</title>
+    <title>MediQueue | Secure Sign In</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 font-sans flex items-center justify-center min-h-screen">
-    <div class="bg-white p-8 rounded-xl shadow-lg border border-gray-200 w-full max-w-md mx-4">
-        <header class="mb-6 text-center">
-            <h1 class="text-3xl font-extrabold text-blue-900">HealthSuite Portal</h1>
-            <p class="text-sm text-gray-500 mt-1">Please provide credential details to continue.</p>
+<body class="bg-slate-50 font-sans flex items-center justify-center min-h-screen">
+    <div class="bg-white p-8 rounded-2xl shadow-xl border border-slate-100 w-full max-w-md mx-4">
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl font-bold text-blue-600">⚕️ MediQueue</h1>
+            <p class="text-sm text-slate-500 mt-2">Sign in to manage your appointments.</p>
         </header>
 
-        <!-- Display validation error messages dynamically -->
         <?php if (!empty($error_message)): ?>
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6 text-sm" role="alert">
-                <span class="font-bold">Error: </span> <?php echo htmlspecialchars($error_message); ?>
+            <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6 text-sm" role="alert">
+                <span class="font-medium">Error:</span> <?php echo htmlspecialchars($error_message); ?>
             </div>
         <?php endif; ?>
 
-        <form action="login.php" method="POST" class="space-y-6">
+        <form action="login.php" method="POST" class="space-y-5">
             <div>
-                <label for="email" class="block text-sm font-bold text-gray-700 mb-1">Email Address</label>
-                <input type="email" id="email" name="email" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="e.g., student@university..." value="<?php echo htmlspecialchars($email ?? ''); ?>">
+                <label for="email" class="block text-sm font-semibold text-slate-700 mb-1">Email Address</label>
+                <input type="email" id="email" name="email" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all" placeholder="e.g., admin@mediqueue.org" value="<?php echo htmlspecialchars($email ?? ''); ?>">
             </div>
             <div>
-                <label for="password" class="block text-sm font-bold text-gray-700 mb-1">Security Password</label>
-                <input type="password" id="password" name="password" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Enter security key">
+                <label for="password" class="block text-sm font-semibold text-slate-700 mb-1">Password</label>
+                <input type="password" id="password" name="password" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all" placeholder="••••••••">
             </div>
-            <button type="submit" class="w-full bg-blue-900 hover:bg-blue-800 text-white font-bold py-3 rounded-lg transition duration-200">
+            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-colors duration-200 shadow-md">
                 Secure Sign-In
             </button>
         </form>
