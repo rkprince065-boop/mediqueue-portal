@@ -1,34 +1,18 @@
 <?php
+// Database configuration for local XAMPP server
+$servername = "localhost";
+$username = "root";       // Default XAMPP username is 'root'
+$password = "";           // Default XAMPP password is empty
+$dbname = "mediqueue_db"; // The database name we created in phpMyAdmin
 
-session_start();
+// Create connection using MySQLi
+$conn = new mysqli($servername, $username, $password, $dbname);
 
-
-if(!isset($_SESSION['user'] && $_SESSION['user_id'] && $_SESSION['name'] && $_SESSION['email']  && $_SESSION['role'])){
-
-header("Location: signin&up.php");
-
-exit();
-
+// Check connection and stop the script if it fails
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
 }
 
-password_hash();
-
-password_verify();
-
-
-$conn = new mysqli(
-
-"localhost",
-"root",
-"",
-"mediqueue"
-
-);
-
-if($conn->connect_error){
-
-die("Connection Failed");
-
-}
-
+// Optional: Set character set to utf8mb4 for security and compatibility
+$conn->set_charset("utf8mb4");
 ?>
