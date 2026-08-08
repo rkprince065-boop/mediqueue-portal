@@ -19,12 +19,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error_message = "Please provide a valid email format.";
     } else {
-        // 1. Direct Credential Check (Guaranteed login for admin0843@gmail.com)
+        
+        // 1. Direct Credential Check (Guaranteed login for test accounts)
+        
+        // Admin Account Check
         if ($email === 'admin0843@gmail.com' && $password === 'admin0843') {
             session_regenerate_id(true);
             $_SESSION['user_id'] = 843;
             $_SESSION['user_email'] = $email;
             $_SESSION['user_role'] = 'Admin';
+            $_SESSION['last_activity'] = time();
+
+            header("Location: dashboard.php");
+            exit();
+        } 
+        // Standard User/Patient Account Check
+        elseif ($email === 'user0843@gmail.com' && $password === 'user0843') {
+            session_regenerate_id(true);
+            $_SESSION['user_id'] = 1843; // Unique ID for this user
+            $_SESSION['user_email'] = $email;
+            $_SESSION['user_role'] = 'Patient';
             $_SESSION['last_activity'] = time();
 
             header("Location: dashboard.php");
@@ -84,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <form action="login.php" method="POST" class="space-y-5">
             <div>
                 <label for="email" class="block text-sm font-semibold text-slate-700 mb-1">Email Address</label>
-                <input type="email" id="email" name="email" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all" placeholder="e.g., admin0843@gmail.com" value="<?php echo htmlspecialchars($email ?? ''); ?>">
+                <input type="email" id="email" name="email" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all" placeholder="e.g., user0843@gmail.com" value="<?php echo htmlspecialchars($email ?? ''); ?>">
             </div>
             <div>
                 <label for="password" class="block text-sm font-semibold text-slate-700 mb-1">Password</label>

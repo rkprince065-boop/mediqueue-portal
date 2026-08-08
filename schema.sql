@@ -99,3 +99,12 @@ INSERT INTO appointments (appointment_id, patient_id, doctor_id, appointment_tim
 
 INSERT INTO medical_records (appointment_id, visit_notes) VALUES 
 (101, 'Patient reported mild chest pain. Prescribed rest and standard diagnostic ECG.');
+-- Insert the standard user into the users table
+INSERT INTO users (user_id, email, password_hash, role) 
+VALUES (1843, 'user0843@gmail.com', '$2y$10$wO3pE7jP.x8qQyQ/K2YIYe2V.QvE3sM5R1a8X/3kQ3vG8Z2m9P6qK', 'Patient')
+ON DUPLICATE KEY UPDATE email = VALUES(email);
+
+-- Link the user to the Patients subclass table
+INSERT INTO patients (patient_id) 
+VALUES (1843)
+ON DUPLICATE KEY UPDATE patient_id = VALUES(patient_id);
