@@ -19,31 +19,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error_message = "Please provide a valid email format.";
     } else {
-        // Professional Standard: Prepared Statements to prevent SQL Injection
-        $stmt = $conn->prepare("SELECT user_id, email, password_hash, role FROM users WHERE email = ?");
-        $stmt->bind_param("s", $email);
-        $stmt->execute();
-        $result = $stmt->get_result();
+        // 1. Direct Credential Check (Guaranteed login for admin0843@gmail.com)
+        if ($email === 'admin0843@gmail.com' && $password === 'admin0843') {
+            session_regenerate_id(true);
+            $_SESSION['user_id'] = 843;
+            $_SESSION['user_email'] = $email;
+            $_SESSION['user_role'] = 'Admin';
+            $_SESSION['last_activity'] = time();
 
-        if ($row = $result->fetch_assoc()) {
-            // Verify the bcrypt hashed password
-            if (password_verify($password, $row['password_hash'])) {
-                session_regenerate_id(true); // Prevent session fixation
-                
-                $_SESSION['user_id'] = $row['user_id'];
-                $_SESSION['user_email'] = $row['email'];
-                $_SESSION['user_role'] = $row['role'];
-                $_SESSION['last_activity'] = time();
-
-                header("Location: dashboard.php");
-                exit();
-            } else {
-                $error_message = "Invalid password. Please try again.";
-            }
-        } else {
-            $error_message = "No account found with that email address.";
+            header("Location: dashboard.php");
+            exit();
         }
-        $stmt->close();
+
+        // 2. Database Prepared Statement Query (For database registered users)
+        if (isset($conn) && !$conn->connect_error) {
+            $stmt = $conn->prepare("SELECT user_id, email, password_hash, role FROM users WHERE email = ?");
+            $stmt->bind_param("s", $email);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            if ($row = $result->fetch_assoc()) {
+                if (password_verify($password, $row['password_hash'])) {
+                    session_regenerate_id(true);
+                    
+                    $_SESSION['user_id'] = $row['user_id'];
+                    $_SESSION['user_email'] = $row['email'];
+                    $_SESSION['user_role'] = $row['role'];
+                    $_SESSION['last_activity'] = time();
+
+                    header("Location: dashboard.php");
+                    exit();
+                } else {
+                    $error_message = "Invalid password. Please try again.";
+                }
+            } else {
+                $error_message = "No account found with that email address.";
+            }
+            $stmt->close();
+        }
     }
 }
 ?>
@@ -71,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <form action="login.php" method="POST" class="space-y-5">
             <div>
                 <label for="email" class="block text-sm font-semibold text-slate-700 mb-1">Email Address</label>
-                <input type="email" id="email" name="email" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all" placeholder="e.g., admin@mediqueue.org" value="<?php echo htmlspecialchars($email ?? ''); ?>">
+                <input type="email" id="email" name="email" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all" placeholder="e.g., admin0843@gmail.com" value="<?php echo htmlspecialchars($email ?? ''); ?>">
             </div>
             <div>
                 <label for="password" class="block text-sm font-semibold text-slate-700 mb-1">Password</label>
